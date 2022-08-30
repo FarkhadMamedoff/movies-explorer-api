@@ -1,6 +1,10 @@
 const { celebrate, Joi } = require('celebrate');
 
+const { Message } = require('../utils/constants');
+
 const urlPattern = /(https?:\/\/)[a-zA-Z.:0-9-?]{2,}\.[a-z]{2,}([-a-zA-Z0-9@:%_+.~#?&=/]*)/;
+
+const handleUrlError = { 'string.pattern.base': Message.BAD_URL };
 
 const updateUserInfoValidator = celebrate({
   body: Joi.object().keys({
@@ -30,9 +34,9 @@ const createMovieValidator = celebrate({
     duration: Joi.number().required(),
     year: Joi.string().required(),
     description: Joi.string().required(),
-    image: Joi.string().required().pattern(urlPattern),
-    trailerLink: Joi.string().required().pattern(urlPattern),
-    thumbnail: Joi.string().required().pattern(urlPattern),
+    image: Joi.string().required().pattern(urlPattern).message(handleUrlError),
+    trailerLink: Joi.string().required().pattern(urlPattern).message(handleUrlError),
+    thumbnail: Joi.string().required().pattern(urlPattern).message(handleUrlError),
     movieId: Joi.number().required(),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
