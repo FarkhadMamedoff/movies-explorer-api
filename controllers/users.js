@@ -17,13 +17,7 @@ module.exports.getUser = (req, res, next) => {
         throw new NotFoundError(Message.USER_NOT_FOUND);
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError(Message.BAD_INPUT_DATA));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -61,6 +55,8 @@ module.exports.updateUserInfo = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(Message.BAD_INPUT_DATA));
+      } else if (err.code === 11000) {
+        next(new ConflictError(Message.BAD_EMAIL_USAGE));
       } else {
         next(err);
       }

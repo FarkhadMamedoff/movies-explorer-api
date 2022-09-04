@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const limitter = require('./middlewares/limitter');
+const errorHandler = require('./middlewares/error');
 const router = require('./routes/index');
 const { allowedCors, DEV_PORT, DEV_DATABASE_ADDRESS } = require('./utils/config');
-const { Status, Message } = require('./utils/constants');
 
 const { NODE_ENV, PROD_PORT, PROD_DATABASE_ADDRESS } = process.env;
 
@@ -22,6 +22,7 @@ mongoose.connect(NODE_ENV === 'production' ? PROD_DATABASE_ADDRESS : DEV_DATABAS
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(requestLogger);
 app.use(limitter);
 
 app.use((req, res, next) => {
@@ -40,19 +41,12 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.use(requestLogger);
 app.use(router);
 app.use(errorLogger);
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  const { statusCode = Status.INTERNALERROR, message } = err;
-  res.status(statusCode).send({
-    message: statusCode === Status.INTERNALERROR ? Message.INTERNAL_SERVER_ERROR : message,
-  });
-  next();
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
